@@ -1,9 +1,8 @@
 !.gitignore
 
 /Kernel-kit/**
-/initrd
 /Kernel-kit/src/**
-/src/source/**
 /Kernel-kit/work/**
-/rootfs/*
- 
+/Kernel-kit/firmwares/**
+/initrd/*
+/rootfs/**
