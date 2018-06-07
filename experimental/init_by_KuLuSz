@@ -47,6 +47,8 @@ elif [ "$pmedia" = "usbflash" -o "$pmedia" = "flash" ];then
   ONEPART=$(echo "$usb" | cut -f1 -d'|' | cut -f3 -d'/' | sed s'/.$//')
   [ ! -z $(readlink $ONEPART | grep usb) ]&& echo "$usb" >> /tmp/mount_dev
  done
+elif [ "$pdev1" ];then
+ cat /tmp/devices | grep $pdev1 >> /tmp/mount_dev
 else
  cp /tmp/devices /tmp/mount_dev
 fi
