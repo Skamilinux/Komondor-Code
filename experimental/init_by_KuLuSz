@@ -64,7 +64,7 @@ if [ $pupsfs ];then #ex: sda3:/subdir/puppy.sfs
  if [ -z $(echo '$pupsfs' | cut -f2 -d':' | cut -f2 -d'/' | grep '.sfs$') ]
   PSUBDIR=$(echo '$pupsfs' | cut -f2 -d':' | cut -f2 -d'/' | cut -f1 -d'/' )
   PUPSFS2=$(echo '$pupsfs' | cut -f2 -d':' | cut -f2 -d'/' | cut -f2 -d'/' )
-  [ "$PUPSFS2" != "DISTRO_PUPPYSFS"]&& echo -e "A  $PUPSFS2 fájl neve nem egyezik az initrdben megadottal,\nmelynek neve : $DISTRO_PUPPYSFS "
+  [ "$PUPSFS2" != "DISTRO_PUPPYSFS"]&& echo -e "A  $PUPSFS2 fájl neve nem egyezik az initrdben megadottal,\nmelynek neve : $DISTRO_PUPPYSFS " > /dev/console
  fi
 fi
 exec /bin/sh >/dev/console 2>&1
