@@ -53,7 +53,7 @@ fi
 if [ -z $(cat /tmp/mount_dev) ];then
  echo "Nem találtam csatolható meghajtót." > /dev/console
 else
-  echo "Meghajtók keresése sikerült" > /dev/console
+  echo "Ezeket a meghajtókat találtam:" > /dev/console
   cat /tmp/mount_dev > /dev/console
 fi
 
