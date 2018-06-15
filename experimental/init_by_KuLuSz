@@ -1,12 +1,11 @@
 #!/bin/sh
-
 export LANG=C #w004
 . /DISTRO_SPECS #v412 has DISTRO_VERSION, DISTRO_FILE_PREFIX
 
 PATH="/bin:/sbin"
 KERNELVER="`uname -r`"
 
-if [ ! $1 ];then
+if [ ! "$1" ];then
  mount -t proc none /proc
  mount -t sysfs none /sys
  mount -t rootfs -o remount,rw rootfs /
@@ -32,39 +31,71 @@ if [ "$pfix" ];then
   esac
  done
 fi
-
 clear
 
+if[ "$RDSH" == "yes" ];then
+ exec /bin/sh >/dev/console 2>&1
+
+fi
 echo "Meghajtók vizsgálása" > /dev/console
 probepart_init > /tmp/devices
 echo "" > /tmp/mount_dev
-if [ "$pmedia" = "cd" ];then
- CDDEV=$(cat /tmp/devices | grep -E '^sr|^iso9660')
- echo "$CDDEV" >> /tmp/mount_dev
-elif [ "$pmedia" = "usbflash" -o "$pmedia" = "flash" ];then
- for usb in $(cat /tmp/devices | grep sd )
- do
-  ONEPART=$(echo "$usb" | cut -f1 -d'|' | cut -f3 -d'/' | sed s'/.$//')
-  [ ! -z $(readlink $ONEPART | grep usb) ]&& echo "$usb" >> /tmp/mount_dev
- done
-elif [ "$pdev1" ];then
- cat /tmp/devices | grep $pdev1 >> /tmp/mount_dev
+if [ "$pupsfs" ];then #ex: sda3:/subdir/puppy.sfs
+ echo $(echo "$pupsfs" | cut -f1 -d':') > /tmp/mount_dev
+ PUPSFS2=$(basename $(echo '$pupsfs' | cut -f2 -d':')) 
+ if [ "$(dirname $(echo '$pupsfs' | cut -f2 -d':'))" != "/" ];then
+  PSUBDIR2=$(dirname $(echo '$pupsfs' | cut -f2 -d':'))
+ fi
+elif [ "$pmedia" ];then
+ PSUBDIR2=$(echo $psubdir) 
+ if [ "$pmedia" == "cd" ];then
+  CDDEV=$(cat /tmp/devices | grep -E '^sr|^iso9660')
+  echo "$CDDEV" >> /tmp/mount_dev
+ elif [ "$pmedia" == "usbflash" -o "$pmedia" == "flash" ];then
+  for usb in $(cat /tmp/devices | grep sd );do
+   ONEPART=$(echo "$usb" | cut -f1 -d'|' | cut -f3 -d'/' | sed s'/.$//')
+   [ ! -z $(readlink $ONEPART | grep usb) ]&& echo "$usb" >> /tmp/mount_dev
+  done
+ fi
+elif [ "$pdev1" ];then #ex: sda3
+ cat /tmp/devices | grep $pdev1 > /tmp/mount_dev
 else
- cp /tmp/devices /tmp/mount_dev
-fi
-if [ -z $(cat /tmp/mount_dev) ];then
- echo "Nem találtam csatolható meghajtót." > /dev/console
-else
- echo "Elérhető meghajtók:" > /dev/console
- cat /tmp/mount_dev > /dev/console
+  cp -rf /tmp/devices /tmp/mount_dev
 fi
 
-if [ $pupsfs ];then #ex: sda3:/subdir/puppy.sfs
- echo $(echo "$pupsfs" | cut -f1 -d':') > /tmp/mount_dev
- if [ -z $(echo '$pupsfs' | cut -f2 -d':' | cut -f2 -d'/' | cut -f1 -d'/' | grep '.sfs$') ]
-  PSUBDIR=$(echo '$pupsfs' | cut -f2 -d':' | cut -f2 -d'/' | cut -f1 -d'/' )
-  PUPSFS2=$(echo '$pupsfs' | cut -f2 -d':' | cut -f2 -d'/' | cut -f2 -d'/' )
-  [ "$PUPSFS2" != "DISTRO_PUPPYSFS"]&& echo -e "A  $PUPSFS2 fájl neve nem egyezik az initrdben megadottal,\nmelynek neve : $DISTRO_PUPPYSFS " > /dev/console
- fi
+[ "$PUPSFS2" != "DISTRO_PUPPYSFS" ]&& echo -e "A $PUPSFS2 fájl neve nem egyezik az initrd-ben megadottal.\nA rendszerhez tartozó sfs fájl neve : $DISTRO_PUPPYSFS " > /dev/console
+[ -z "$PUPSFS2" ]&& PUPSFS2=$(echo "$DISTRO_PUPPYSFS")
+
+if [ "$PSUBDIR2" == "" ];then
+ MAXDEPTH="-depth -maxdepth 1"
+ FINDPATH="/mnt/data"
+else
+ MAXDEPTH=""
+ FINDPATH=$(echo "/mnt/data$PSUBDIR2")
 fi
+
+if [ ! -z $(cat /tmp/mount_dev) ];then
+ for i in $(cat /tmp/mount_dev);do
+ DEV=$(echo "$i" | cut -f1 -d'|')
+ if [ "$(echo "$i" | awk -F'|' '{print $2}')" != "none" ];then
+  DEVFS=$(echo "$i" | awk -F'|' '{print $2}')
+  mount -t $DEVFS $DEV /mnt/data
+ else
+  mount $DEV /mnt/data
+ fi
+ if [ ! -z $(cat /proc/mounts | grep $DEV) ];then
+  MOUNT_SFS=$(find $FINDPATH $MAXDEPTH -type f -iname $PUPSFS2)
+  if [ ! -z $(echo "$MOUNT_SFS") ];then
+  
+   #sfs csatolása
+   
+  fi
+ else
+  echo "Az $(echo $DEV | cut -f3 -d'/' ) meghajtó nem lett fel csatolva" > /dev/console
+ fi
+ done
+else
+echo -e "Nincs csatolható meghajtó a feltételek alapján. Válassz más boot paramétert." > /dev/console
+fi
+
 exec /bin/sh >/dev/console 2>&1
