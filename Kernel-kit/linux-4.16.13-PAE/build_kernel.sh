@@ -12,7 +12,7 @@ fi
 cd $(ls -d linux-*)
 
 #initialize
-echo "Preparing kernel work area..."
+echo "Preparing kernel area..."
 make mrproper -j $NUM_JOBS
 
 # make oldconfig ???? ....later maybe....
@@ -23,18 +23,18 @@ make \
   bzImage -j $NUM_JOBS
 
 
-make INSTALL_MOD_PATH="$SRC_DIR/work/kernel/kernel_installed" modules_install
+make INSTALL_MOD_PATH="$SRC_DIR/kernel/kernel_installed" modules_install
 
 
 # Install the kernel file.
 cp arch/x86/boot/bzImage \
-  $SRC_DIR/work/kernel/kernel_installed/vmlinuz
+  $SRC_DIR/kernel/kernel_installed/vmlinuz
 
 # Install kernel headers which are used later when we build and configure the
 # GNU C library (glibc).
 echo "Generating kernel headers..."
 make \
-  INSTALL_HDR_PATH=$SRC_DIR/work/kernel/kernel_installed \
+  INSTALL_HDR_PATH=$SRC_DIR/kernel/kernel_installed \
   headers_install -j $NUM_JOBS
 
 cd $SRC_DIR
