@@ -1,0 +1,9 @@
+#!/bin/sh
+cd /
+
+DIR="$(dirname $0)"
+. $DIR/config
+
+. ${DIR}/0_check_config
+. ${DIR}/1_get_kernel
+. ${DIR}/2_build_kernel

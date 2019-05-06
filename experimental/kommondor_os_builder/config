@@ -1,0 +1,15 @@
+#!/bin/sh
+# Ez a fő beállító fájl
+DIR=$(dirname $0)
+
+# Add meg a rendszer nevét (ez lesz az ISO és egyéb prefixek neve)
+OS_NAME="Kommondor_OS"
+
+# Add meg a kernel elrési útját a felsővesszők között, kiterjesztés tar.xz
+# Példa: https://mirrors.edge.kernel.org/pub/linux/kernel/v2.6/linux-2.6.12.tar.xz
+KERNEL_URL=""
+
+
+# Ehez ne nyúlj!
+KERNEL_FILE=$(echo "$KERNEL_URL" | rev | cut -f1 -d'/' | rev)
+KERNEL_VERSION=$(echo "$KERNEL_FILE" | cut -f2 -d'-' | sed 's/.tar.xz//')

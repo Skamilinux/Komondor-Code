@@ -1,0 +1,40 @@
+#!/bin/sh
+DIR="$(dirname $0)"
+. $DIR/config
+
+[ -e /tmp/stop ]&& exit
+
+echo " 01 - Kernel letöltése... "
+
+[ ! -d $DIR/source ]&& mkdir -p $DIR/source
+
+wget -c -N --no-check-certificate -q -P $DIR/source "${KERNEL_URL}"
+
+if [ -e $DIR/source/$KERNEL_FILE ];then
+ echo "                                 kész "
+else
+ echo "                                 hiba"
+ sleep 1
+ echo "Ellenőrizd a kernel elérési útját a config fájlban!"
+ sleep 1
+ echo " Itt: $DIR"
+ touch /tmp/stop
+ exit
+fi
+
+[ -e /tmp/stop ]&& exit
+
+mkdir -p $DIR/work/kernel
+rm -rf $DIR/work/kernel/*
+
+echo " 02 - Kernel kicsomagolása... "
+tar -xf $DIR/source/${KERNEL_FILE} -C $DIR/work/kernel
+
+if [ $(ls $DIR/work/kernel/) ];then
+ echo "                                 kész"
+else
+ echo "                                 hiba"
+ echo " Ellenőrizd a tar parancs meglétét."
+ touch /tmp/stop
+fi
+exit

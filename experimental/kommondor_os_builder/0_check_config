@@ -1,0 +1,38 @@
+#!/bin/sh
+clear
+DIR="$(dirname $0)"
+. $DIR/config
+echo ""
+echo "  #########################################"
+echo " #                                         #"
+echo " #  Üdvözöl a Kommondor OS építő szkript.  #"
+echo " #                                         #"
+echo "  #########################################"
+echo ""
+sleep 2
+echo -n " 00 - Config fájl ellenörzése... "
+
+sleep 1
+if [ -z $OS_NAME ];then
+ echo "hiba"
+ echo ""
+ echo " Állítsd be a rendszer nevét a config fájlban!"
+ echo " Itt: $DIR"
+ echo ""
+ echo " K i l é p é s "
+ echo ""
+ touch /tmp/stop
+elif [ -z $KERNEL_URL ];then
+ echo "hiba"
+ echo ""
+ echo " Állítsd be a kernel elérési útját a config fájlban!"
+ echo " Itt: $DIR"
+ echo ""
+ echo " K i l é p é s "
+ echo ""
+ touch /tmp/stop
+else
+ echo "kész"
+ [ -e /tmp/stop ]&& rm /tmp/stop
+fi
+

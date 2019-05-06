@@ -1,0 +1,42 @@
+#!/bin/sh
+DIR="$(dirname $0)"
+. $DIR/config
+
+[ -e /tmp/stop ]&& exit
+
+echo " 03 - Kernel konfigurálása..."
+
+[ ! -e $DIR/work/kernel/linux-$KERNEL_VERSION ]&& mv $DIR/work/kernel/linux $DIR/work/kernel/linux-${KERNEL_VERSION}
+sync
+# Cleans up the kernel sources, including configuration files
+make -C $DIR/work/kernel/linux-${KERNEL_VERSION} -j $(grep -c ^processor /proc/cpuinfo) mrproper
+
+# Create a default configuration file for the kernel
+make -C $DIR/work/kernel/linux-${KERNEL_VERSION} -j $(grep -c ^processor /proc/cpuinfo) defconfig
+
+# Changes the name of the system
+sed -i "s/.*CONFIG_DEFAULT_HOSTNAME.*/CONFIG_DEFAULT_HOSTNAME=\"kommondor_os\"/" ${DIR}/work/kernel/linux-${KERNEL_VERSION}/.config
+
+sed -i "s/^# CONFIG_SQUASHFS.*$/CONFIG_SQUASHFS=y\
+\\nCONFIG_SQUASHFS_FILE_CACHE=y\
+\\n# CONFIG_SQUASHFS_FILE_DIRECT is not set\
+\\n# CONFIG_SQUASHFS_DECOMP_SINGLE is not set\
+\\n# CONFIG_SQUASHFS_DECOMP_MULTI is not set\
+\\nCONFIG_SQUASHFS_DECOMP_MULTI_PERCPU=y\
+\\nCONFIG_SQUASHFS_XATTR=y\
+\\nCONFIG_SQUASHFS_ZLIB=y\
+\\nCONFIG_SQUASHFS_LZO=n\
+\\nCONFIG_SQUASHFS_LZ4=n\
+\\nCONFIG_SQUASHFS_XZ=n\
+\\n# CONFIG_SQUASHFS_4K_DEVBLK_SIZE is not set\
+\\n# CONFIG_SQUASHFS_EMBEDDED is not set\
+\\nCONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3/g" ${DIR}/work/kernel/linux-${KERNEL_VERSION}/.config
+
+sed -i "s/^# CONFIG_NTFS_FS.*$/CONFIG_NTFS_FS=y\
+\\n# CONFIG_NTFS_DEBUG is not set\
+\\nCONFIG_NTFS_RW=y/g" ${DIR}/work/kernel/linux-${KERNEL_VERSION}/.config
+
+# Compile the kernel with optimization for "parallel jobs" = "number of processors"
+# Good explanation of the different kernels
+# http://unix.stackexchange.com/questions/5518/what-is-the-difference-between-the-following-kernel-makefile-terms-vmlinux-vmlinux
+make -C ${DIR}/work/kernel/linux-${KERNEL_VERSION} bzImage -j $(grep -c ^processor /proc/cpuinfo)
