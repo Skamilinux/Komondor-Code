@@ -9,10 +9,10 @@ echo " 03 - Kernel konfigurálása..."
 [ ! -e $DIR/work/kernel/linux-$KERNEL_VERSION ]&& mv $DIR/work/kernel/linux $DIR/work/kernel/linux-${KERNEL_VERSION}
 sync
 # Cleans up the kernel sources, including configuration files
-make -C $DIR/work/kernel/linux-${KERNEL_VERSION} -j $(grep -c ^processor /proc/cpuinfo) mrproper
+make -C $DIR/work/kernel/linux-${KERNEL_VERSION} -j $(grep -c ^processor /proc/cpuinfo) mrproper 2> $DIR/work/kernel/mk_bugs.log
 
 # Create a default configuration file for the kernel
-make -C $DIR/work/kernel/linux-${KERNEL_VERSION} -j $(grep -c ^processor /proc/cpuinfo) defconfig
+make -C $DIR/work/kernel/linux-${KERNEL_VERSION} -j $(grep -c ^processor /proc/cpuinfo) defconfig 2> $DIR/work/kernel/mk_bugs.log
 
 # Changes the name of the system
 sed -i "s/.*CONFIG_DEFAULT_HOSTNAME.*/CONFIG_DEFAULT_HOSTNAME=\"kommondor_os\"/" ${DIR}/work/kernel/linux-${KERNEL_VERSION}/.config
@@ -39,4 +39,4 @@ sed -i "s/^# CONFIG_NTFS_FS.*$/CONFIG_NTFS_FS=y\
 # Compile the kernel with optimization for "parallel jobs" = "number of processors"
 # Good explanation of the different kernels
 # http://unix.stackexchange.com/questions/5518/what-is-the-difference-between-the-following-kernel-makefile-terms-vmlinux-vmlinux
-make -C ${DIR}/work/kernel/linux-${KERNEL_VERSION} bzImage -j $(grep -c ^processor /proc/cpuinfo)
+make -C ${DIR}/work/kernel/linux-${KERNEL_VERSION} bzImage -j $(grep -c ^processor /proc/cpuinfo) 2>> $DIR/work/kernel/mk_bugs.log
